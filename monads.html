@@ -1,0 +1,175 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>What is a Monad?</title>
+		<style type="text/css">
+			span {
+				color: #F92672;
+				background-color: #eee;
+			}
+		</style>
+	</head>
+	<body>
+<pre>
+What is a Monad?
+================
+
+<i>Note: this article assumes some familiarity with Haskell.</i>
+
+A monad is a monoid in the category of endofunctors.
+
+That's usually given as a joke answer, but it's true. And I think it's the
+proper way to explain what monads are and why they're useful.
+
+First, let's go over what a monoid is. A monoid has three components:
+
+- A category
+- An associative binary operation on that category
+- An "identity value" for the operation
+
+The easiest example is addition on the natural numbers. Here, the identity
+value is 0, because adding 0 to any number does not change it. Also note that
+addition is an associative operation; that is, (1 + 2) + 3 = 1 + (2 + 3).
+
+Similarly, multiplication is a monoid with identity value 1. However, we can
+easily show that subtraction and division are <i>not</i> monoids, because they are
+not associative: (1 - 2) - 3 ≠ 1 - (2 - 3). This makes it clear that
+subtraction and division are really just special cases of the addition and
+multiplication monoids.
+
+Given this definition, we can easily construct our own monoid. For example,
+our category could be grocery lists, with the identity value being an empty
+list. Our binary operation will be to take two lists and merge their elements,
+deleting any duplicate items. You can verify for yourself that this operation
+is associative.
+The point is: monoids aren't just a mathematical oddity, they're an
+abstraction that we can use to our advantage. As an example, we can define a
+<span>fold</span> function (also known as <span>reduce</span>) on any monoid. Start by setting an
+"accumulator" variable to monoid's identity value. Then successively apply the
+monoid operation to the accumulator and each element of the input list. With
+addition, this yields the sum of the list. With multiplication, it yields the
+product. And because monoids are associative, we can easily parallelize this
+operation.
+
+Now the only missing piece is endofunctors. Once we understand endofunctors,
+we'll have a complete picture of what a monad is. In category theory, a
+functor is a mapping from one category to another. For example, when you turn
+the dial on your stove, you're mapping the category of rotation to the
+category of heat. An endofunctor is a special case: it's a mapping from a
+category to itself. Thus, most of the mathematical functions you are familiar
+with are endofunctors, because they map one number to another.
+
+Finally, we can turn to programming. In functional programming, we generally
+only see one kind of monad: those whose endofunctor's category is <i>types</i>. In
+other words, throw out the term "endofunctor," and replace it with "function."
+And when you hear "monad," think "a monoid in the category of functions from
+one type to another."
+So now we have a rough idea of what a monad looks like. It's a category
+(functions from type A to type B), an operation that composes two such
+functions, and an identity function. Generally, the tricky part is in the
+composing. We need to take two functions with signature <span>A -> B</span>, and produce
+a new function with the same signature. This involves some "wrapping and
+unwrapping," which is why you'll hear people telling you that monads are like
+burritos (more on that later).
+
+I know this is all very abstract, so I'll break out everyone's favorite monad
+example: <span>Maybe</span>. <span>Maybe</span> is commonly used to compose functions that can fail,
+such that if any individual function fails, the whole chain will fail. First,
+let's make an important distinction: <span>Maybe</span> is not a monad. <span>Maybe</span> is a <i>type</i>
+that has a monad <i>instance</i>. A <span>Maybe</span> value can be either <span>Just x</span> or <span>Nothing</span>. But
+the <span>Maybe</span> <i>monad</i> deals with <i>functions</i> with the signature <span>x -> Maybe x</span>. Its
+binary operator works like this: we are given two functions, <span>f</span> and <span>g</span>, with
+signature <span>x -> Maybe x</span>. We return a new function that first calls <span>f</span>. If the
+result is <span>Nothing</span>, the function immediately returns <span>Nothing</span>. Otherwise, it
+returns <span>g(result)</span>. We also need an identity function. Our goal is that if we
+use our binary operator on the identity function and some other function <span>f</span>,
+the result will be the same as calling <span>f</span> alone. We accomplish this by defining
+an identity function that, given <span>x</span>, returns <span>Just x</span>. In Haskell, the binary
+operator is called <span>bind</span> (or <span>>>=</span>), and the identity function is called <span>return</span>.
+
+Okay. Let's look at what it would be like to use <span>Maybe</span> if it didn't
+have a monad instance. If you've ever used a language that has pointers, this
+should look familiar. In this example, we want to call a bunch of functions,
+each of which returns a pointer to an integer. Here's how it would normally
+look in C:
+
+	int *z;
+	int *x = foo();
+	if (x != NULL) {
+		int *y = bar(*x);
+		if (y != NULL) {
+			z = baz(*y);
+		}
+	}
+
+One way to clean this up would be to have <span>bar</span> and <span>baz</span> check for a <span>NULL</span>
+argument internally, and propagate <span>NULL</span> if their argument is null. Then we
+could write:
+
+	int *x = foo();
+	int *y = bar(x);
+	int *z = baz(y);
+
+Or even:
+
+	int *z = baz(bar(foo()));
+
+Here's where the beauty of monads comes in. In this example, we needed to
+change the internal behavior of <span>bar</span> and <span>baz</span> in order to wire things up
+properly. But if we have the <span>bind</span> operator, we can implement this change at
+the <i>composition level</i>. So instead of modifying <span>bar</span> and <span>baz</span>, we can simply
+write:
+
+	// C implementation of Maybe's bind operation
+	int* bind(int* (*fn)(*int), int *x) {
+		if (x == NULL) return NULL;
+		return fn(*x);
+	}
+
+	int *z = bind(baz, bind(bar, foo()));
+
+Or, with pretty Haskell syntax:
+
+	z = foo >>= bar >>= baz
+
+As you can see, polymorphic types are a huge convenience here, because we can
+use a single <span>>>=</span> operator for every monad. In fact, they're pretty essential
+to making monads useful at all. That's why you don't see them much outside of
+Haskell.
+
+Part of the reason why monads are so notoriously hard to explain is that they
+are a very abstract concept. They have a wide range of uses, from error
+propagation to parsing to concurrency to I/O, but examining any individual use
+won't give you the full picture. Let's revisit some alternative monad
+explanations and see if they make more sense now.
+
+- <a href="http://zacharyvoase.com/2014/04/30/monads">Monads are programmable semicolons</a>. This just means that monads allow you to
+  specify how operations should be composed. The analogy is muddled somewhat
+  because semicolons delimit <i>statements</i>, whereas Haskell doesn't have
+  statements — only expressions.
+
+- <a href="http://blog.plover.com/prog/burritos.html">Monads are burritos</a>. This is referring to how <span>bind</span> "wraps and unwraps" types
+  in order to compose operations.
+
+The tricky part is not understanding monads, it's understanding how to use
+them in real code. The best way to do this is to study examples of existing
+monads, and discover how their properties make them useful, powerful, and
+elegant.
+
+- The <a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads/Maybe">Maybe</a> monad you've already seen.
+
+- Surprisingly, <a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads/List">List</a> has a monad instance as well. It is used for modeling
+  nondeterministic computations. This is a good example of how the <span>List</span> type
+  itself is not a monad, but rather has a monad instance. And though the
+  instance is useful, it does not follow directly from the definition of List.
+
+- The <a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads/State">State</a> monad provides access to shared state.
+
+- In the same vein, the <a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads/IO">IO</a> monad permits side effects in pure code by treating
+  the entire outside world as shared state.
+
+I recommend that you study each of these in order to attain monad satori.
+
+</pre>
+	</body>
+</html>
