@@ -1,0 +1,74 @@
+==================================================================
+https://keybase.io/lukechampine
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of http://lukechampine.com
+  * I am lukechampine (https://keybase.io/lukechampine) on keybase.
+  * I have a public key with fingerprint 99C2 18A7 FA3C C119 562B  D6C5 A5C1 CE07 4CBF 1D60
+
+To do so, I am signing this object:
+
+{
+    "body": {
+        "key": {
+            "eldest_kid": "01015478ac15e85d72f70ebb4ff772c9ebafac0c8e5824d5d6a4be8504f62a0521310a",
+            "fingerprint": "99c218a7fa3cc119562bd6c5a5c1ce074cbf1d60",
+            "host": "keybase.io",
+            "key_id": "a5c1ce074cbf1d60",
+            "kid": "01015478ac15e85d72f70ebb4ff772c9ebafac0c8e5824d5d6a4be8504f62a0521310a",
+            "uid": "236abdab8cac4faf0597b2f29647f219",
+            "username": "lukechampine"
+        },
+        "service": {
+            "hostname": "lukechampine.com",
+            "protocol": "http:"
+        },
+        "type": "web_service_binding",
+        "version": 1
+    },
+    "ctime": 1479412871,
+    "expire_in": 157680000,
+    "prev": "54de513b18c19a0e0766edeea55993b5f8b006aac0e5030beff8ab6f91d37e0d",
+    "seqno": 4,
+    "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1
+
+owGtkntQVFUcx5dHkQItbIk2ui7dgVaD6N6797F31aHCLDMGKskFtOWce89lb7B3
+3ygxTQ2QBjoUIo9Bm+UxjsQA4RI2ig0DNk5h5DAjlCXYg9CigbBUtod0L1P/+Wfn
+nzPn/D6/7/n+vnPejY3QhIcdH/oi6vlBfUHYhZ+gxpoWU1OGQadQilnKsCK0vKFi
+AXl9tiJJwCwYTuAETbFmwBM0MtMCS4osjiCkRJFlSZ5DEIiAx3kzos0kJdACAyio
+gDglMiTAaZIwETjAUjFRkguRx+WRZJ8iy3E8SZgBKwITzxMERzMkFBieBjRP8Ahn
+KR6KhMDgSqPd6VU7FHMQeFGa5FTulINt2d5d+P/Zt39ZjjQxAAoAmnnAUyIQcZpj
+ISmSHEOxIklwKuhFHhk4kEIX+4sQbwcOlyQj7PVUTKmUSDxSw1WnuQuVxjsdiobL
+4/Q5eWexUrX7fC6L2uwrdan0XgRt/+rYoCQLSpxKQwnyeCWnjFkIheR9kipMUCxH
+EaSZJVIxtM8leZBNUgmaZcy4stRnUIkiaaMpAdGECRJmnuAAruTIMEhACNA0x5kg
+LZohjjNAyQnRuAmHSBTNADIiRwgmFuECpo7mlp2YhVJ8gkJF0ysVysDn9yhzr6wK
+XxepCQvX3HtPuPrRNCtXxP33+6z7tUsvHg0eyJupsOu3rDlUMnbFx8yUBRfjfzDW
+ThpvB2LzV1zdOfJMvvsKVezpfLn4K+LU77MnDhg/ueS/Nasv1zZcSmoo3TLZVk30
+7Na2aIIoqLs4Pa3p+60sovd8ppxT3vGUnHiwcdVq4evgR60x9BFe91aMtW7sy5QC
+Q23mNXHn4NDaDzv3Cjn1lbVxw1M/1m8N9D/oHdeF0GEr7Ml8acE+Y8gajajYMbp1
+ZNb6npOb2xibZXlWbyylHhoej8mWBuuqdK32NQnTc9c3hMjQO4mReq97yni/djEy
+4P0ssv+P0NOwpvPRgc1NMbuyO/qb9zweWop2H5pIT5+v8PoPftrwQHuLta1mKEe7
+/ka6Ps1yen5VRUFH7pu7x4Yn9oxTGZvuqza4sRBpemN9aPHmbFdyc8hwdqTr+1+S
+bt3ZXFm18Kr1hVzX/LG2ZGb0atz18u0nNon1J6Oi3849fievL/UsUdgauFAwFqZz
+V/+1+mgzl//E31jGt/T4N2eEyOmqP41Nl0/dQExl+5l9Jx9JGjyylJAiJidkXEsc
+hdlx+LqgA9OeNnyX52z5vLc30Lw08WtTT/vcWMsr7uHHmqfOC9vtsNHW7Z+87Ajq
+z72WUvHksbosa+Djbbe7fm4EoGOgZGHHrmi5pW8u/ubwc1EfdF8s7a56+P2NhgG2
+y6GL36DpEM+t5f4B
+=erSM
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/lukechampine
+
+==================================================================
+
