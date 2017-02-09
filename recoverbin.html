@@ -1,0 +1,92 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>How to Access a Running Binary on Linux</title>
+		<style type="text/css">
+			span {
+				background-color: #eee;
+			}
+		</style>
+	</head>
+	<body>
+<pre>
+How to Access a Running Binary on Linux
+=======================================
+
+Here's a scenario that many sysadmins may have run into:
+
+Weeks ago, you started up a binary on your server. Today it started having
+problems, so you want to diagnose it. There's just one problem: the original
+binary file has been overwritten or deleted. How can you recover the running
+binary in order to probe it?
+
+I suspected that there was a way to do this on Linux, and my suspicion was
+soon confirmed. Let's investigate how to do it, and why it works.
+
+Our first step is to look in <span>/proc</span>. We'll need the PID of the binary, which we
+can find using <span>pidof</span> or a program like <span>htop</span>. The <span>/proc</span> entry contains a
+symlink called <span>exe</span>, which points to the original path of the executable.
+That's a fine first step, but it doesn't help us if we overwrote that file.
+
+But the binary data must still exist somewhere, right? Indeed. When we
+overwrote our binary, behind the scenes, the OS first unlinks the old file,
+then writes the new one. But merely unlinking a file does not (necessarily)
+delete it. Since the OS knows that a process is using the file, it won't
+remove the data until the process ends.
+
+Back to <span>/proc</span>. There is another file here that we can use: <span>maps</span>. This
+file contains a listing of all the files mapped by the process. Using <span>grep</span>, we
+can find the mapping of the original executable path, along with a crucial
+piece of information: the inode of the file. This is the number immediately
+preceding the path of the file.
+
+Now the only question is: how do we recover a file just from its inode? You
+might expect this to be straightforward, but no sir. The reason is
+permissions. If we could get a file's contents simply using its inode, then we
+could bypass file permissions all over the place. So we need a special tool
+for this job: <span>debugfs</span>. Fortunately it comes packaged with most distros.
+
+To use debugfs, we must identify the device where the original executable was
+located. This can be determined using <span>df /path</span>. Then, running <span>debugfs [device]</span>
+will drop us into an interactive shell; or we can use the <span>-R</span> flag to specify a
+single command to run. We will also want to supply the <span>-w</span> flag to indicate
+that we need write access to the device. The command we will supply is:
+
+    <span>ln &lt;[inode]&gt; /path</span>
+
+where <span>[inode]</span> is the inode found in the <span>/maps</span> file, and <span>/path</span> is the new path
+that we want to link the inode to. One quirk to be aware of here is that the
+path will be relative to the root of the device. For example, if the mount
+point is <span>/home</span>, the above command will link to <span>/home/path</span>.
+
+That's it! We successfully recovered a running binary, and can now perform
+diagnostics on it. Here is a bash script that will automatically perform the
+steps above:
+
+
+    #!/bin/bash
+    set -e
+
+    pid="$1"
+    exepath="$2"
+    outpath="$3"
+
+    if [[ -z $outpath ]]; then
+        echo "Usage: $0 [PID] [EXEPATH] [OUTPATH]"
+        echo "Note that OUTPATH must be relative to the device mount point."
+        exit 1
+    fi
+
+    # get inode
+    inode=$(grep $exepath /proc/$pid/maps | awk 'NR==1{ print $5; }')
+
+    # get device
+    dev=$(df $exepath | awk 'NR==2{ print $1; }')
+
+    set -o xtrace
+    sudo debugfs -w $dev -R "ln &lt;$inode&gt; $outpath"
+
+
+</pre>
+	</body>
+</html>
