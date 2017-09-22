@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Hacking a ProgComp with Side Channels</title>
+	<style>
+	.hljs,pre{display:block}blockquote p,dfn{font-style:italic}code{background-color:#f2f2f2;border-radius:4px;padding:2px 4px}pre{margin:0 0 10px;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px;-moz-tab-size:4;-o-tab-size:4;tab-size:4}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.hljs{overflow-x:auto;padding:.5em;background:#002b36;color:#839496;-webkit-text-size-adjust:none}.diff .hljs-header,.hljs-comment,.hljs-doctype,.hljs-javadoc,.hljs-pi,.hljs-template_comment,.lisp .hljs-string{color:#586e75}.css .hljs-tag,.hljs-addition,.hljs-keyword,.hljs-request,.hljs-status,.hljs-winutils,.method,.nginx .hljs-title{color:#859900}.hljs-command,.hljs-dartdoc,.hljs-hexcolor,.hljs-link_url,.hljs-number,.hljs-phpdoc,.hljs-regexp,.hljs-rules .hljs-value,.hljs-string,.hljs-tag .hljs-value,.tex .hljs-formula{color:#2aa198}.css .hljs-function,.hljs-built_in,.hljs-chunk,.hljs-decorator,.hljs-id,.hljs-identifier,.hljs-localvars,.hljs-title,.hljs-typename,.vhdl .hljs-literal{color:#268bd2}.hljs-attribute,.hljs-class .hljs-title,.hljs-constant,.hljs-link_reference,.hljs-parent,.hljs-type,.hljs-variable,.lisp .hljs-body,.smalltalk .hljs-number{color:#b58900}.css .hljs-pseudo,.diff .hljs-change,.hljs-attr_selector,.hljs-cdata,.hljs-header,.hljs-pragma,.hljs-preprocessor,.hljs-preprocessor .hljs-keyword,.hljs-shebang,.hljs-special,.hljs-subst,.hljs-symbol,.hljs-symbol .hljs-string{color:#cb4b16}.hljs-deletion,.hljs-important{color:#dc322f}.hljs-link_label{color:#6c71c4}.tex .hljs-formula{background:#073642}*,:after,:before{box-sizing:border-box}a{background:0 0;cursor:pointer;color:#35D7BB;text-decoration:none}a:active,a:hover{outline:0}b,strong{font-weight:700}h1{margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}images{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{box-sizing:content-box;height:0}code,pre{font-family:monospace,monospace}html{font-size:.875em;background:#fff;color:#373D49}blockquote p,body,pre{font-size:1rem}body,html{font-family:Georgia,Cambria,serif;height:100%}body{font-weight:400;line-height:2rem}ol,ul{margin-bottom:.83999rem;padding-top:.16001rem}li{-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-left:1rem}li>ol,li>ul{margin-bottom:0}p{text-align:justify;padding-top:.66001rem;-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-top:0}p,pre{margin-bottom:1.33999rem}pre{overflow:auto;padding:.66001rem 9.5px 9.5px;line-height:1.3rem;border-color:#D3DAEA}blockquote{margin:0}blockquote p{margin-bottom:.33999rem;padding:.66001rem 1rem 1rem;border-left:3px solid #A0AABF}td,th{padding:12px}h1,h2,h3,h4,h5,h6{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-style:normal;font-weight:600;margin-top:0}h1{line-height:3rem;font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h2,h3{line-height:3rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}a:focus,a:hover{border-bottom-color:#35D7BB;color:#dff9f4}img{height:auto;max-width:100%}#content{padding:15px;width:800px;margin:0 auto}#content a{color:#A0AABF;text-decoration:underline}
+	</style>
+</head>
+
+<body id="content">
+<h1><a id="Hacking_a_ProgComp_with_Side_Channels_0"></a>Hacking a ProgComp with Side Channels</h1>
+<p>As of this writing, I have the best score on <a href="https://goc.vivint.com/problems/invasion/leaderboard">this Game of Codes problem</a> by a factor of 10. <b>I cheated to get it.</b> Here’s how.</p>
+<p><a href="https://goc.vivint.com/">Game of Codes</a> is a programming 
+competition that follows the typical progcomp format. There are 10 
+problems, each with two or three test cases. When you submit your code, 
+it is fed inputs via stdin, and writes solutions to stdout. Each correct
+ answer earns you a point; the leaderboard ranks the submitted programs 
+firstly by points, and secondly by the lowest elapsed time for your 
+program to complete the test cases.</p>
+<p>That last bit is important, because it means that the programmer <em>must not be allowed to see the test cases</em>.
+ If they could, it would be trivial to hard-code the correct answer for 
+each test input. This isn’t a problem in progcomps like <a href="http://adventofcode.com/">Advent of Code</a>,
+ because they don’t score you based on execution time, only submission 
+time. But when speed matters, gaining knowledge of the test inputs 
+allows you to write the theoretically-optimal program for a given 
+problem: read input, consult answer table, write output. Two syscalls 
+and a few microseconds of array lookups.</p>
+<p>Now, Game of Codes tries very hard to hide the test inputs. They 
+don’t allow you to see the output of your program; only whether it 
+succeeded or failed. This prevents you from simply printing the test 
+inputs to stdout. Furthermore, your program is run in a restricted 
+environment: the filesystem is read-only, and network calls are blocked.
+ So you can’t sneak the inputs out via HTTP request or other 
+network-based means.</p>
+<p>But one hole is left unplugged: the leaderboard lists the execution 
+time of each submission. And that’s a side channel. Specifically, we can
+ use a <a href="https://en.wikipedia.org/wiki/Timing_attack">timing attack</a>
+ to recover information about the test inputs, using only the recorded 
+execution time of the program. This is the attack I used to achieve a 
+(near-) optimal time on the “Invasion” problem linked above. But first, 
+to understand the method, let’s look at a simpler problem.</p>
+<h3><a id="Islands_12"></a>Islands</h3>
+<p><a href="https://goc.vivint.com/problems/islands">Here’s the problem description</a>
+ for “Islands,” a program that is easy prey for the timing attack. When 
+conducting the attack, we want to minimize the amount of information 
+that we have to transmit. Notice that although the example input is 
+fairly verbose, the example <em>output</em> is a small set of small 
+numbers. So in this case we will leak the output rather than the input. 
+The distinction doesn’t matter much; either way, we’ll be able to 
+construct our optimal solution.</p>
+<p>First, we need to solve the problem, since the Game of Codes server 
+only tells you the execution time of successful tests. Once we have a 
+working program, we can establish baseline timings for each test case. 
+My program ran each test case runs in about 30ms. We then introduce our 
+leak code by adding a <code>sleep</code> call. We’ll sleep for <em>n</em> seconds, where <em>n</em> is the value we want to leak, starting with the first output:</p>
+<pre><code class="language-go"><span class="hljs-keyword">func</span> main() {
+    <span class="hljs-comment">// ... solution code goes here ...</span>
+    
+    time.Sleep(time.Second * outputs[<span class="hljs-number">0</span>])
+}
+</code></pre>
+<p>When we push this code to the Game of Codes server, we get a response that looks like this (actual values changed):</p>
+<pre><code>Compiling...
+&gt; go build -o run
+Compilation success in 267.644988ms
+Running examples...
+Example 1 success in 2.032274213s
+Running tests...
+Test 1 success in 4.045206722s
+Test 2 success in 7.037433879s
+1 examples succeeded.
+2 tests succeeded in 14.082640601s.
+</code></pre>
+<p>Boom, we just leaked our first outputs! Test 1 ran in 4 seconds, so 
+its first output is 4; likewise, the first output of Test 2 is 7. The 
+example ran in 2 seconds, so the first output should be a 2 – and we can
+ confirm from the problem description that it is.</p>
+<p>Now it’s just a matter of repeating this process for <code>output[1]</code>, <code>output[2]</code>,
+ and so on. We’ll know when we’ve found all of them when the tests start
+ failing – that means the program crashed due to accessing an index of <code>outputs</code> that doesn’t exist. We can also check our progress as we go by overwriting the contents of <code>outputs</code>
+ with our leaked values before writing them to stdout. If our leaked 
+values are incorrect, overwriting the actual values will cause the test 
+to fail.</p>
+<p>Once we know all the outputs, we need to tackle another problem: 
+matching each input with its output. In other words, we need a way for 
+our program to identify which input it’s processing. Unsurprisingly, we 
+can leak this information the same way as before. In the case of 
+“Islands,” the first number of the input is sufficient to distinguish 
+between the test cases. But since the input numbers are large, we can’t 
+multiply them by a full second like we did for the outputs – the test 
+would take too long to run. Instead, we’ll sleep for <code>inputs[0] * time.Millisecond</code>.
+ But when we do this, we run into a new complication: variance. If the 
+execution time varies by more than 1ms compared to our baseline, then 
+our leaked value will be wrong. It could take quite a few tries to 
+recover the correct input.</p>
+<p>Fortunately, we can improve upon this by using a two-stage approach. 
+First, we’ll use a 1ms multiplier to get an “initial guess” for the 
+input value. Then we’ll run the program again, but this time subtract 
+our guess from the input, and multiply the remainder by 1s. For example,
+ let’s say our baseline execution time is 26ms. On our first run, we 
+multiply by 1ms, and the execution time is 854ms. That gives us an 
+initial guess of 828. On the second run, we subtract 828 from <code>input</code>
+ and multiply by 1s, resulting in an execution time of 4.024s. This 
+tells us (with high confidence) that the actual value is 828 + 4 = 832.</p>
+<p>Once we’ve matched each test input to its outputs, we can write the “optimal program” (actual values changed):</p>
+<pre><code class="language-go"><span class="hljs-keyword">func</span> main() {
+    <span class="hljs-comment">// read 4 bytes to determine which test we're running</span>
+    fst := <span class="hljs-built_in">make</span>([]<span class="hljs-typename">byte</span>, <span class="hljs-number">4</span>)
+    os.Stdin.Read(fst[:])
+
+    <span class="hljs-keyword">switch</span> <span class="hljs-typename">string</span>(fst) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">"3000"</span>: <span class="hljs-comment">// Example</span>
+        os.Stdout.WriteString(<span class="hljs-string">"2\n1\n0\n4\n3\n5\n"</span>)
+    <span class="hljs-keyword">case</span> <span class="hljs-string">"1234"</span>: <span class="hljs-comment">// Test 1</span>
+        os.Stdout.WriteString(<span class="hljs-string">"1\n2\n3\n4\n5\n6\n7\n"</span>)
+    <span class="hljs-keyword">case</span> <span class="hljs-string">"5678 "</span>: <span class="hljs-comment">// Test2</span>
+        os.Stdout.WriteString(<span class="hljs-string">"1\n2\n3\n4\n5\n6\n7\n"</span>)
+    }
+}
+</code></pre>
+<p>This performs quite well – but surprisingly, it isn’t fast enough to 
+top the scoreboard. I’m not sure why this is, but somehow the top 
+program runs 5ms faster than this code. Fortunately, the same is not 
+true of…</p>
+<h3><a id="Invasion_70"></a>Invasion</h3>
+<p>This problem presents some new challenges, but I knew that I could 
+get the top leaderboard position if I solved it. When I started, the 
+fastest program ran in about 500ms. The nice thing about these optimal 
+programs is that their speed is independent of the computational 
+complexity of the actual problem; the code is always just a lookup 
+table. So I expected that I could submit a solution that ran 
+approximately as fast as my Islands solution: 30ms.</p>
+<p>The <a href="https://goc.vivint.com/problems/invasion">problem description</a>
+ indicates that this problem boils down to computing a bunch of hashes 
+and subsequently matching messages to hashes in order to reconstruct the
+ original “message chain.” I wrote a straightforward (unoptimized) 
+solution, which ran in about 25ms for the first two test inputs, and 
+1.5s for the third. Then I set about recovering the outputs.</p>
+<p>The expected output for this problem is a bunch of concatenated 
+message strings. Recovering all that string data would be tedious, but 
+fortunately there’s an easy way to compress it. Since each message comes
+ from an element in the input array, we can simply leak the index of 
+each message, rather than the messages themselves. To check whether this
+ was reasonable, the first thing I leaked was the number of messages in 
+each test output. The first test had 4 messages; the second had 19; and 
+the third had 501. I could recover the first two manually, but no way 
+was I going to leak 501 values by hand. To compound the problem, the 
+values I intended to leak were large, which meant that there’s no way I 
+could multiply them by 1s; I would need to use the guess-and-check 
+strategy mentioned earlier for every value. This called for some 
+automation.</p>
+<p>I wrote a small Go program that repeatedly generated new code, pushed
+ it to the Game of Codes server, parsed the response, and used the 
+timing information to generate the next iteration. The generated code 
+included a check so that it would fail if it guessed the wrong value; 
+the observer could then notice this failure, revert the last commit, and
+ attempt to guess the value again. This meant I could mostly let the 
+program run unsupervised.</p>
+<p>But when I fired up the program, it quickly became apparent that the 
+frequency of these “retries” was unacceptably high. My baseline 
+execution time of 1.5s had significant variance, causing lots of 
+incorrect guesses even when using the two-phase guess-and-check 
+approach. Tests also took a long time to run – sometimes as long as 50 
+seconds – meaning that a wrong guess could cause a delay of over 2 
+minutes. I needed to refine my approach.</p>
+<p>After a lot of head-scratching, I had an epiphany that in retrospect 
+seemed embarrassingly obvious. By padding the baseline execution time, I
+ could reduce the variance, allowing me to decrease the sleep 
+multiplier. In code:</p>
+<pre><code class="language-go"><span class="hljs-keyword">func</span> main() {
+    start := time.Now()
+    
+    <span class="hljs-comment">// ... solution code goes here ...</span>
+    
+    time.Sleep(<span class="hljs-number">5</span> * time.Second - time.Since(start))
+    time.Sleep(sleepMultiplier * leakedValue)
+}
+</code></pre>
+<p>I measured, and indeed, this approach clamped the variance to a few 
+milliseconds. As a result, I was able to drop the sleep multiplier to 
+10ms and do away with guess-and-check; most of the time, the first guess
+ was accurate enough that a second pass wasn’t needed. I gleefully 
+deployed this new code and watched it chug away. This was a slow 
+process, since the Game of Codes server was rate-limited to enforce a 
+10s delay between each push. But at 15s per value, it only took two 
+hours to calculate all 501.</p>
+<p>Once all the values were calculated, I constructed a near-optimal solution for the problem (actual values changed):</p>
+<pre><code class="language-go"><span class="hljs-keyword">var</span> Example = []<span class="hljs-typename">int</span>{<span class="hljs-number">2</span>, <span class="hljs-number">1</span>, <span class="hljs-number">3</span>}
+<span class="hljs-keyword">var</span> Test1 = []<span class="hljs-typename">int</span>{<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>}
+<span class="hljs-keyword">var</span> Test2 = []<span class="hljs-typename">int</span>{<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, ...} <span class="hljs-comment">// 16 values omitted</span>
+<span class="hljs-keyword">var</span> Test3 = []<span class="hljs-typename">int</span>{<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, ...} <span class="hljs-comment">// 498 values omitted</span>
+
+<span class="hljs-keyword">func</span> main() {
+    <span class="hljs-keyword">var</span> js [][<span class="hljs-number">2</span>]<span class="hljs-typename">string</span>
+    json.NewDecoder(os.Stdin).Decode(&amp;js)
+
+    <span class="hljs-keyword">var</span> indices []<span class="hljs-typename">int</span>
+    <span class="hljs-keyword">switch</span> <span class="hljs-built_in">len</span>(js) {
+    <span class="hljs-keyword">case</span> <span class="hljs-number">6</span>:
+        indices = Example
+    <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:
+        indices = Test1
+    <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:
+        indices = Test2
+    <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:
+        indices = Test3
+    }
+    messages := <span class="hljs-built_in">make</span>([]<span class="hljs-typename">string</span>, <span class="hljs-built_in">len</span>(indices))
+    <span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> indices {
+        messages[i] = js[indices[i]][<span class="hljs-number">1</span>]
+    }
+    os.Stdout.WriteString(strings.Join(messages, <span class="hljs-string">" "</span>))
+}
+</code></pre>
+<p>Fingers crossed, push it to the server…</p>
+<pre><code>&gt; go build -o run
+Compilation success in 210.389187ms
+Running examples...
+Example 1 success in 15.855545ms
+Running tests...
+Test 1 success in 14.883978ms
+Test 2 success in 15.048268ms
+Test 3 success in 16.664773ms
+1 examples succeeded.
+3 tests succeeded in 46.597019ms.
+</code></pre>
+<p>SUCCESS! We lost some time here due to slow JSON parsing, but this solution is still 10x faster than anyone else’s!</p>
+<h2><a id="Conclusion_145"></a>Conclusion</h2>
+<p>Pulling off this hack was pretty fun. People seem to be split on 
+whether it counts as cheating or not. It’s true that I only used 
+publically-available information – I didn’t exploit a buffer overflow in
+ the server code or anything like that – but this is obviously not how 
+the problems were intended to be solved. I feel a bit guilty about 
+stealing the top leaderboard position from someone who spent a lot of 
+time optimizing their code. But hey, I invested a fair amount of time in
+ my approach too, so… it’s a wash. For what it’s worth, I don’t plan to 
+execute this attack on any other Game of Codes problems, and I 
+discourage anyone else from doing so. I hope the Game of Codes team 
+found my antics amusing (rather than threatening), and I hope this post
+piqued your interest in timing attacks and other side channels.</p>
+<p></p>
+</body>
+</html>
