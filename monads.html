@@ -121,7 +121,7 @@ the <i>composition level</i>. So instead of modifying <span>bar</span> and <span
 write:
 
 	// C implementation of Maybe's bind operation
-	int* bind(int* (*fn)(*int), int *x) {
+	int* bind(int* (*fn)(int), int *x) {
 		if (x == NULL) return NULL;
 		return fn(*x);
 	}
