@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>How to use Sia Irresponsibly</title>
+	<style>
+	.hljs,pre{display:block}blockquote p,dfn{font-style:italic}code{background-color:#f2f2f2;border-radius:4px;padding:2px 4px}pre{margin:0 0 10px;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px;-moz-tab-size:4;-o-tab-size:4;tab-size:4}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.hljs{overflow-x:auto;padding:.5em;background:#002b36;color:#839496;-webkit-text-size-adjust:none}.diff .hljs-header,.hljs-comment,.hljs-doctype,.hljs-javadoc,.hljs-pi,.hljs-template_comment,.lisp .hljs-string{color:#586e75}.css .hljs-tag,.hljs-addition,.hljs-keyword,.hljs-request,.hljs-status,.hljs-winutils,.method,.nginx .hljs-title{color:#859900}.hljs-command,.hljs-dartdoc,.hljs-hexcolor,.hljs-link_url,.hljs-number,.hljs-phpdoc,.hljs-regexp,.hljs-rules .hljs-value,.hljs-string,.hljs-tag .hljs-value,.tex .hljs-formula{color:#2aa198}.css .hljs-function,.hljs-built_in,.hljs-chunk,.hljs-decorator,.hljs-id,.hljs-identifier,.hljs-localvars,.hljs-title,.hljs-typename,.vhdl .hljs-literal{color:#268bd2}.hljs-attribute,.hljs-class .hljs-title,.hljs-constant,.hljs-link_reference,.hljs-parent,.hljs-type,.hljs-variable,.lisp .hljs-body,.smalltalk .hljs-number{color:#b58900}.css .hljs-pseudo,.diff .hljs-change,.hljs-attr_selector,.hljs-cdata,.hljs-header,.hljs-pragma,.hljs-preprocessor,.hljs-preprocessor .hljs-keyword,.hljs-shebang,.hljs-special,.hljs-subst,.hljs-symbol,.hljs-symbol .hljs-string{color:#cb4b16}.hljs-deletion,.hljs-important{color:#dc322f}.hljs-link_label{color:#6c71c4}.tex .hljs-formula{background:#073642}*,:after,:before{box-sizing:border-box}a{background:0 0;cursor:pointer;color:#35D7BB;text-decoration:none}a:active,a:hover{outline:0}b,strong{font-weight:700}h1{margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}images{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{box-sizing:content-box;height:0}code,pre{font-family:monospace,monospace}html{font-size:.875em;background:#fff;color:#373D49}blockquote p,body,pre{font-size:1rem}body,html{font-family:Georgia,Cambria,serif;height:100%}body{font-weight:400;line-height:2rem}ol,ul{margin-bottom:.83999rem;padding-top:.16001rem}li{-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-left:1rem}li>ol,li>ul{margin-bottom:0}p{text-align:justify;padding-top:.66001rem;-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-top:0}p,pre{margin-bottom:1.33999rem}pre{overflow:auto;padding:.66001rem 9.5px 9.5px;line-height:1.3rem;border-color:#D3DAEA}blockquote{margin:0}blockquote p{margin-bottom:.33999rem;padding:.66001rem 1rem 1rem;border-left:3px solid #A0AABF}td,th{padding:12px}h1,h2,h3,h4,h5,h6{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-style:normal;font-weight:600;margin-top:0}h1{line-height:3rem;font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h2,h3{line-height:3rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}a:focus,a:hover{border-bottom-color:#35D7BB;color:#dff9f4}img{height:auto;max-width:100%}#content{padding:15px;width:800px;margin:0 auto}#content a{color:#A0AABF;text-decoration:underline}
+	</style>
+</head>
+
+<body id="content">
+<h1><a id="How_to_use_Sia_Irresponsibly_0"></a>How to use Sia Irresponsibly</h1>
+<p>Recently I published <a href="https://github.com/lukechampine/us"><code>us</code></a>, a low-level interface to Sia. With <code>us</code>, you can interact directly with Sia hosts, allowing you to manage your own file contracts and control exactly what you upload and download. In this post, we’ll demonstrate this by using <code>us</code> to bypass the safety features of <code>siad</code>. Specifically, we’ll upload an unencrypted file to a single host, sacrificing all of the privacy and redundancy advantages of Sia. Of course, in a real app, you should be encrypting your files and uploading them redundantly! This example merely serves as an introduction to the <code>us</code> packages, and shows that <code>us</code> enables you to do things that are not possible with <code>siad</code>.</p>
+<p>The following code snippets use these <code>us</code> packages:</p>
+<pre><code class="language-go"><span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"lukechampine.com/us/hostdb"</span>
+    <span class="hljs-string">"lukechampine.com/us/renter"</span>
+    <span class="hljs-string">"lukechampine.com/us/renter/proto"</span>
+    <span class="hljs-string">"lukechampine.com/us/renter/renterutil"</span>
+    <span class="hljs-string">"lukechampine.com/us/renterhost"</span>
+)
+</code></pre>
+<p>Also, for brevity, all error handling is omitted. In real code, don’t do that!</p>
+<h2><a id="Part_1_Contract_Formation_17"></a>Part 1: Contract Formation</h2>
+<p>Before we can do anything interesting, we need a contract. To get one, we need to pick a host, query its current prices, calculate how much money to spend, construct the contract transaction, and perform the contract negotiation protocol with the host. If all goes well, the result will be a transaction signed by both parties, which we'll want to write to disk somewhere for safekeeping.</p>
+<p>The first step is to connect to <code>siad</code> and use it to “scan” the host in order to learn its prices. We don’t know the host’s IP, just its public key; fortunately, <code>siad</code> keeps track of all the host announcements in the blockchain, so it will be able to resolve that public key to the host’s most-recently announced IP address. The <code>Scan</code> method hides all these details from us:</p>
+<pre><code class="language-go"><span class="hljs-keyword">const</span> siadPassword = <span class="hljs-string">"f7d3aac1fad0e4af706ee3f648b73610"</span> <span class="hljs-comment">// found in ~/.sia/apipassword</span>
+siad := renterutil.NewSiadClient(<span class="hljs-string">":9980"</span>, siadPassword)
+<span class="hljs-keyword">const</span> hostPubKey = <span class="hljs-string">"ed25519:4a1df2dc1f0e5a6ad..."</span> <span class="hljs-comment">// truncated</span>
+host, _ := siad.Scan(hostPubKey)
+</code></pre>
+<p>Using the retrieved host settings, we can calculate how many siacoins we would need to spend on a given contract. When you form a contract, you lock up some quantity of “funds” for the duration of the contract, which you can use to pay for uploading, downloading, and storage costs. Calculating this quantity thus requires estimating how much data we expect to store and how much we expect to download. In this example, let’s assume that we want to store 1 GB for 1000 blocks, and that we expect to download a total of 2 GB. The total amount of funds to allocate can then be calculated as:</p>
+<pre><code class="language-go"><span class="hljs-keyword">const</span> uploadedBytes = <span class="hljs-number">1e9</span>
+<span class="hljs-keyword">const</span> downloadedBytes = <span class="hljs-number">2e9</span>
+<span class="hljs-keyword">const</span> duration = <span class="hljs-number">1000</span>
+uploadFunds := host.UploadBandwidthPrice.Mul64(uploadedBytes)
+downloadFunds := host.DownloadBandwidthPrice.Mul64(downloadedBytes)
+storageFunds := host.StoragePrice.Mul64(uploadedBytes).Mul64(duration)
+totalFunds := uploadFunds.Add(downloadFunds).Add(storageFunds)
+</code></pre>
+<p>(Note that there is a distinction between the <em>contract funds</em> and the total <em>contract cost</em>. The <em>funds</em> are available for the renter to spend throughout the contract duration, while the <em>cost</em> is the total number of coins spent to form the contract. The latter is equal to the funds plus three fees: the contract formation fee imposed by the host, the 3.9% siafunds tax applied to all file contracts, and the transaction fee that ensures the contract transaction will be included in the blockchain. In other words, don’t be spooked if the transaction that appears in your wallet history spends more than <code>totalFunds</code>.)</p>
+<p>Sia’s consensus rules require us to specify the exact block heights for the start and end of the contract, so the last thing we’ll need is the current block height, which we can get from <code>siad</code>. Finally, we can pass everything to the contract formation function:</p>
+<pre><code class="language-go">currentHeight, _ := siad.ChainHeight()
+start, end := currentHeight, currentHeight+duration
+contractTxn, _ := proto.FormContract(siad, siad, host, totalFunds, start, end)
+</code></pre>
+<p>That’s it! <code>FormContract</code> will connect to the host and execute the contract formation protocol, producing a signed contract. To finish up, we just need to save that contract to disk. <code>us</code> provides <a href="https://github.com/lukechampine/us/blob/master/renter/formats.md#contract">an efficient format for storing contracts</a>, which is available in the <code>renter</code> package:</p>
+<pre><code class="language-go">contractPath := <span class="hljs-string">"contracts/mycontract.contract"</span>
+_ = renter.SaveContract(contractTxn, contractPath)
+</code></pre>
+<p><em>(In real code, you should use a better name for your contract files. A good approach is to concatenate the host’s public key with the contract ID.)</em></p>
+<h2><a id="Part_2_Uploading_60"></a>Part 2: Uploading</h2>
+<p>Now that we have a contract, we can use it to transfer data. We’ll connect to the host and enter a loop, where we repeatedly upload a <em>sector</em> of file data and then revise the contract to pay the host for the cost of uploading and storing the sector. For each sector we upload, we’ll record the <em>Merkle root</em> of the sector; when we want to download, we’ll request each sector (in order) using these roots. An important implementation detail here is that sectors have a fixed size of 4 MiB. So, unless our file is an exact multiple of 4 MiB, we’ll need to pad the final sector when uploading and trim the padding when downloading.</p>
+<p>To begin, we’ll open the contract that we formed previously, as well as the file we want to upload. We’ll also want to record the size of the file so that we can calculate the padding later:</p>
+<pre><code class="language-go">contract, _ := renter.LoadContract(contractPath)
+<span class="hljs-keyword">defer</span> contract.Close()
+f, _ := os.Open(<span class="hljs-string">"myfile.jpg"</span>)
+<span class="hljs-keyword">defer</span> f.Close()
+stat, _ := f.Stat()
+filesize := stat.Size()
+</code></pre>
+<p>To facilitate the upload, we’ll create an <code>Uploader</code> object. For this, we’ll need the host’s current IP, which we can get from <code>siad</code>:</p>
+<pre><code class="language-go">hostIP, _ := siad.ResolveHostKey(hostPubKey)
+uploader, _ := proto.NewUploader(hostIP, contract, currentHeight)
+</code></pre>
+<p>Now we’re ready to start uploading. On each iteration, we read the next sector, upload it, and record the sector’s Merkle root, stopping when we reach the end of the file:</p>
+<pre><code class="language-go"><span class="hljs-keyword">var</span> sector [renterhost.SectorSize]<span class="hljs-typename">byte</span>
+<span class="hljs-keyword">var</span> roots []crypto.Hash <span class="hljs-comment">// that's "Sia/crypto", not "crypto" from the stdlib</span>
+<span class="hljs-keyword">for</span> {
+    <span class="hljs-keyword">if</span> _, err := io.ReadFull(f, sector[:]); err == io.EOF {
+        <span class="hljs-keyword">break</span>
+    }
+    sectorMerkleRoot, _ := uploader.Upload(&amp;sector)
+    roots = <span class="hljs-built_in">append</span>(roots, sectorMerkleRoot)
+}
+uploader.Close()
+</code></pre>
+<p>We’re done! We’ve uploaded a plaintext file to a single Sia host. Next, we’ll see how to retrieve it.</p>
+<h2><a id="Part_3_Downloading_99"></a>Part 3: Downloading</h2>
+<p>As before, we’ll use the contract and host IP to create an object (this time, a <code>Downloader</code>) that uses the contract revision protocol to facilitate downloads. We’ll also want to create a destination file to hold the downloaded file:</p>
+<pre><code class="language-go">downloader, _ := proto.NewDownloader(hostIP, contract)
+dst, _ := os.Create(<span class="hljs-string">"myfile2.jpg"</span>)
+<span class="hljs-keyword">defer</span> dst.Close()
+</code></pre>
+<p>To retrieve the file, we’ll download each sector (storing them in a reusable buffer) and then write the buffer to our output file. To handle padding, we’ll keep track of the “bytes remaining”; when this number is less than a full sector, we’ll know that we should only write the remaining bytes:</p>
+<pre><code class="language-go"><span class="hljs-keyword">var</span> sectorBuf [renterhost.SectorSize]<span class="hljs-typename">byte</span>
+rem := filesize
+<span class="hljs-keyword">for</span> _, sectorMerkleRoot := <span class="hljs-keyword">range</span> roots {
+    _ = downloader.Sector(&amp;sectorBuf, sectorMerkleRoot)
+    writeLen := <span class="hljs-built_in">len</span>(sectorBuf)
+    <span class="hljs-keyword">if</span> rem &lt; writeLen {
+        writeLen = rem
+    }
+    dst.Write(sectorBuf[:rem])
+    rem -= writeLen
+}
+downloader.Close()
+</code></pre>
+<p>And that’s all there is to it!</p>
+<h2><a id="Conclusion_130"></a>Conclusion</h2>
+<p>It’s worth stating again that this is not how Sia was intended to be used. First, without encryption, hosts can see what you’re uploading; besides the obvious privacy concerns, this could allow them to compress your data and thus reduce their storage costs while charging you full price. Second, without redundancy, your file is at the mercy of a single host. The host could refuse to let you download unless you paid a ridiculous price, or they could simply go offline. Even if they aren’t malicious, their hard drive could fail, rendering your data unrecoverable. If that wasn’t enough to convince you, redundancy can also speed up your downloads, since you can download in parallel and use only the fastest subset of hosts.</p>
+<p>In short, there are <em>many</em> reasons to use proper encryption and redundancy when storing data on Sia! In a subsequent post, we’ll look at how <code>us</code> makes it easy to add these important properties to your files.</p>
+<p></p>
+</body>
+</html>
