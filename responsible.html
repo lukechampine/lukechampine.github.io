@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>How to use Sia Responsibly</title>
+	<style>
+	.hljs,pre{display:block}blockquote p,dfn{font-style:italic}code{background-color:#f2f2f2;border-radius:4px;padding:2px 4px}pre{margin:0 0 10px;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px;-moz-tab-size:4;-o-tab-size:4;tab-size:4}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.hljs{overflow-x:auto;padding:.5em;background:#002b36;color:#839496;-webkit-text-size-adjust:none}.diff .hljs-header,.hljs-comment,.hljs-doctype,.hljs-javadoc,.hljs-pi,.hljs-template_comment,.lisp .hljs-string{color:#586e75}.css .hljs-tag,.hljs-addition,.hljs-keyword,.hljs-request,.hljs-status,.hljs-winutils,.method,.nginx .hljs-title{color:#859900}.hljs-command,.hljs-dartdoc,.hljs-hexcolor,.hljs-link_url,.hljs-number,.hljs-phpdoc,.hljs-regexp,.hljs-rules .hljs-value,.hljs-string,.hljs-tag .hljs-value,.tex .hljs-formula{color:#2aa198}.css .hljs-function,.hljs-built_in,.hljs-chunk,.hljs-decorator,.hljs-id,.hljs-identifier,.hljs-localvars,.hljs-title,.hljs-typename,.vhdl .hljs-literal{color:#268bd2}.hljs-attribute,.hljs-class .hljs-title,.hljs-constant,.hljs-link_reference,.hljs-parent,.hljs-type,.hljs-variable,.lisp .hljs-body,.smalltalk .hljs-number{color:#b58900}.css .hljs-pseudo,.diff .hljs-change,.hljs-attr_selector,.hljs-cdata,.hljs-header,.hljs-pragma,.hljs-preprocessor,.hljs-preprocessor .hljs-keyword,.hljs-shebang,.hljs-special,.hljs-subst,.hljs-symbol,.hljs-symbol .hljs-string{color:#cb4b16}.hljs-deletion,.hljs-important{color:#dc322f}.hljs-link_label{color:#6c71c4}.tex .hljs-formula{background:#073642}*,:after,:before{box-sizing:border-box}a{background:0 0;cursor:pointer;color:#35D7BB;text-decoration:none}a:active,a:hover{outline:0}b,strong{font-weight:700}h1{margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}images{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{box-sizing:content-box;height:0}code,pre{font-family:monospace,monospace}html{font-size:.875em;background:#fff;color:#373D49}blockquote p,body,pre{font-size:1rem}body,html{font-family:Georgia,Cambria,serif;height:100%}body{font-weight:400;line-height:2rem}ol,ul{margin-bottom:.83999rem;padding-top:.16001rem}li{-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-left:1rem}li>ol,li>ul{margin-bottom:0}p{text-align:justify;padding-top:.66001rem;-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-top:0}p,pre{margin-bottom:1.33999rem}pre{overflow:auto;padding:.66001rem 9.5px 9.5px;line-height:1.3rem;border-color:#D3DAEA}blockquote{margin:0}blockquote p{margin-bottom:.33999rem;padding:.66001rem 1rem 1rem;border-left:3px solid #A0AABF}td,th{padding:12px}h1,h2,h3,h4,h5,h6{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-style:normal;font-weight:600;margin-top:0}h1{line-height:3rem;font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h2,h3{line-height:3rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}a:focus,a:hover{border-bottom-color:#35D7BB;color:#dff9f4}img{height:auto;max-width:100%}#content{padding:15px;width:800px;margin:0 auto}#content a{color:#A0AABF;text-decoration:underline}
+	</style>
+</head>
+
+<body id="content">
+<h1><a id="How_to_use_Sia_Responsibly_0"></a>How to use Sia Responsibly</h1>
+
+
+
+<p>In a <a href="https://lukechampine.com/irresponsible.html">previous post</a>, I
+demonstrated how to use <a href="https://github.com/lukechampine/us"><code>us</code></a> to access
+low-level storage functionality, uploading raw (unencrypted) file data to a
+single host. As I stated in that post, this is highly discouraged! Unless you
+have a very specific use-case, content stored on Sia should always be
+encrypted and split across multiple hosts. So in today’s post, we’ll explore
+how to add these properties to our files.</p>
+<p>As before, we’ll need the following <code>us</code> packages:</p>
+<pre><code class="language-go"><span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"lukechampine.com/us/hostdb"</span>
+    <span class="hljs-string">"lukechampine.com/us/renter"</span>
+    <span class="hljs-string">"lukechampine.com/us/renter/proto"</span>
+    <span class="hljs-string">"lukechampine.com/us/renter/renterutil"</span>
+    <span class="hljs-string">"lukechampine.com/us/renterhost"</span>
+)
+</code></pre>
+<p>Code examples will omit error handling for brevity. In real code, don't do that!</p>
+<h2><a id="Part_1_Redundancy_24"></a>Part 1: Redundancy</h2>
+<p>We’ll start by adding redundancy. This involves processing our file with a
+<a href="https://en.wikipedia.org/wiki/Reed–Solomon_error_correction">Reed-Solomon</a> encoder. The encoder splits the file into <em>m</em> “data shards”,
+and then generates additional “parity shards” for a total of <em>n</em> shards. To
+recover the file, we just need any <em>m</em> of the shards, whether they’re data or
+parity. In this example, we’ll use a 2-of-4 code, which means that we need any
+2 of the 4 shards to recover our file. Note that our total redundancy is
+2x: the original file fits in 2 shards, but we have 4 shards total.</p>
+<p>Encoding the file looks like this:</p>
+<pre><code class="language-go">rs := renter.NewRSCode(<span class="hljs-number">2</span>, <span class="hljs-number">4</span>)
+data, _ := ioutil.ReadFile(<span class="hljs-string">"myfile.jpg"</span>)
+bytesPerShard := <span class="hljs-built_in">len</span>(data) / <span class="hljs-number">2</span>
+shards := <span class="hljs-built_in">make</span>([][]<span class="hljs-typename">byte</span>, <span class="hljs-number">4</span>)
+<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> shards {
+    shards[i] = <span class="hljs-built_in">make</span>([]<span class="hljs-typename">byte</span>, bytesPerShard)
+}
+rs.Encode(data, shards)
+</code></pre>
+<p>We can test that this works by deleting two of the shards and trying to
+recover the original file:</p>
+<pre><code class="language-go">shards[<span class="hljs-number">0</span>] = <span class="hljs-constant">nil</span> <span class="hljs-comment">// delete a data shard</span>
+shards[<span class="hljs-number">2</span>] = <span class="hljs-constant">nil</span> <span class="hljs-comment">// delete a parity shard</span>
+<span class="hljs-keyword">var</span> buf bytes.Buffer
+rs.Recover(&amp;buf, shards, <span class="hljs-built_in">len</span>(data))
+</code></pre>
+<p>The contents of <code>buf</code> will now match <code>data</code>. If we had deleted one more shard,
+though, recovery would have failed.</p>
+<p>Once we have our encoded shards, we just need to upload them to separate
+hosts. We’ll assume that we’ve already formed the
+contracts we need and stored them in a directory called <code>contracts/</code>. First,
+we load the contracts and connect to each host:</p>
+<pre><code class="language-go">contracts, _ := renter.LoadContracts(<span class="hljs-string">"contracts"</span>)
+uploaders := <span class="hljs-built_in">make</span>([]*proto.Uploader, <span class="hljs-number">0</span>, <span class="hljs-number">4</span>)
+<span class="hljs-keyword">for</span> _, contract := <span class="hljs-keyword">range</span> contracts {
+    hostIP, _ := siad.ResolveHostKey(contract.HostKey())
+    u, _ := proto.NewUploader(hostIP, contract, currentHeight)
+    <span class="hljs-keyword">defer</span> u.Close()
+    uploaders = <span class="hljs-built_in">append</span>(uploaders, u)
+}
+</code></pre>
+<p>Then, we upload our shards, one sector at a time:</p>
+<pre><code class="language-go">roots := <span class="hljs-built_in">make</span>([][]crypto.Hash, <span class="hljs-number">4</span>)
+<span class="hljs-keyword">for</span> i, shard := <span class="hljs-keyword">range</span> shards {
+    <span class="hljs-keyword">var</span> sector [renterhost.SectorSize]<span class="hljs-typename">byte</span>
+    <span class="hljs-keyword">for</span> buf := bytes.NewBuffer(shard); buf.Len() &gt; <span class="hljs-number">0</span>; {
+        buf.Read(sector[:])
+        sectorMerkleRoot, _ := uploaders[i].Upload(&amp;sector)
+        roots[i] = <span class="hljs-built_in">append</span>(roots[i], sectorMerkleRoot)
+    }
+}
+</code></pre>
+<p>Our file is now uploaded redundantly across 4 hosts!</p>
+<p>Note that the amount of metadata we need to keep track of has increased.
+In the previous post, we just needed the original
+filesize, the host's public key, and the Merkle root of each sector we
+uploaded. For redundant files, we need <em>each</em> host's public key and
+Merkle roots, as well as the parameters (<em>m</em> and <em>n</em>) of the erasure code.</p>
+<h2><a id="Part_2_Encryption_97"></a>Part 2: Encryption</h2>
+<p>Now we’ll add encryption to each shard. It’s important to add encryption
+<em>after</em> erasure-encoding, not before; otherwise, hosts could cheat. If a host
+knows that you’re storing a 2-of-4 file, then when you ask for their shard,
+they can quickly download 2 shards from other hosts and reconstruct their
+shard on the fly. In other words, they don't need to store their
+shard at all, because they can just regenerate it on demand! This is bad news for the
+renter, because it means that the “true” redundancy of their file is lower than
+they paid for. Encryption prevents this scenario: if the shards are encrypted, applying the erasure code will produce random garbage.</p>
+<p>In this example, we’ll use <a href="https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant">ChaCha</a> (specifically ChaCha20) as our encryption cipher. ChaCha is a
+good choice because it allows us to decrypt any 64-byte block of data
+independently. It also has zero storage overhead, so encrypting a sector
+doesn’t increase its size. Oh, and it's really, really fast. :) We’ll use this
+package:</p>
+<pre><code class="language-go"><span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"github.com/aead/chacha20/chacha"</span>
+)
+</code></pre>
+<p>First, we need to generate an encryption key for each shard, using random bytes from <code>crypto/rand</code>:</p>
+<pre><code class="language-go">keys := <span class="hljs-built_in">make</span>([]*chacha.Cipher, <span class="hljs-number">4</span>)
+<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> keys {
+    key := <span class="hljs-built_in">make</span>([]<span class="hljs-typename">byte</span>, chacha.KeySize)
+    rand.Read(key)
+    nonce := <span class="hljs-built_in">make</span>([]<span class="hljs-typename">byte</span>, chacha.NonceSize) <span class="hljs-comment">// use an empty nonce</span>
+    keys[i], _ = chacha.NewCipher(nonce, key, <span class="hljs-number">20</span>)
+}
+</code></pre>
+<p>Then, we simply encrypt each shard with the appropriate key before uploading:</p>
+<pre><code class="language-go"><span class="hljs-keyword">for</span> i, shard := <span class="hljs-keyword">range</span> shards {
+    keys[i].XORKeyStream(shard, shard)
+}
+</code></pre>
+<p>Adding encryption means more metadata to keep track of; namely, we need to
+store the encryption key for each shard.</p>
+<h2><a id="Part_3_Downloading_147"></a>Part 3: Downloading</h2>
+<p>To download, we’ll need to invert the operations we applied when uploading:
+download the shards, decrypt them, then apply the erasure code to recover the
+original data. We’ll also need to trim any padding off of the final result.</p>
+<p>This should be pretty intuitive, so I’ll just show the whole operation:</p>
+<pre><code class="language-go"><span class="hljs-keyword">var</span> buf bytes.Buffer
+rem := filesize
+<span class="hljs-keyword">for</span> rootIndex := <span class="hljs-number">0</span>; rem &gt; <span class="hljs-number">0</span>; rootIndex++ {
+    <span class="hljs-comment">// gather each shard</span>
+    shards := <span class="hljs-built_in">make</span>([][]<span class="hljs-typename">byte</span>, <span class="hljs-number">4</span>)
+    <span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> shards {
+        <span class="hljs-keyword">var</span> sector [renterhost.SectorSize]<span class="hljs-typename">byte</span>
+        _ = downloader.Sector(&amp;sector, roots[i][rootIndex])
+        keys[i].XORKeyStream(sector[:], sector[:])
+        shards[i] = sector[:]
+    }
+    <span class="hljs-comment">// recover the two data shards</span>
+    writeLen := renterhost.SectorSize * <span class="hljs-number">2</span>
+    <span class="hljs-keyword">if</span> rem &lt; writeLen {
+        writeLen = rem
+    }
+    rs.Recover(&amp;buf, shards, rem)
+    rem -= writeLen
+}
+</code></pre>
+<p>In practice, we shouldn’t be downloading every shard, since we only need two
+in order to recover the data. For optimal performance, we can start
+downloading all of the shards in parallel, and then stop as soon as any two of
+them complete. Or, if we want to minimize cost, we can sort the hosts by price
+and then try them in order until we have enough shards. There are lots of
+possible strategies, which is why <code>us</code> leaves that decision up to you.</p>
+<h2><a id="Conclusion_184"></a>Conclusion</h2>
+<p>We were able to add encryption and redundancy to our files without adding very
+much code. Now we have a file that is completely private, and will remain
+available if some hosts go offline! We can also apply performance
+optimizations, like downloading parallel, to retrieve our file faster than if
+it was stored on a single host.</p>
+<p>In the next post, we’ll look at the functions and formats that <code>us</code> provides
+to facilitate encryption and redundancy. Without spoiling too much, they’ll
+save you a lot of time vs. implementing these features yourself.</p>
+<p></p>
+
+</body>
+</html>
