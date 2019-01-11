@@ -2,14 +2,14 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>How to use Sia Responsibly</title>
+	<title>DIY Encryption and Redundancy with us</title>
 	<style>
 	.hljs,pre{display:block}blockquote p,dfn{font-style:italic}code{background-color:#f2f2f2;border-radius:4px;padding:2px 4px}pre{margin:0 0 10px;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px;-moz-tab-size:4;-o-tab-size:4;tab-size:4}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.hljs{overflow-x:auto;padding:.5em;background:#002b36;color:#839496;-webkit-text-size-adjust:none}.diff .hljs-header,.hljs-comment,.hljs-doctype,.hljs-javadoc,.hljs-pi,.hljs-template_comment,.lisp .hljs-string{color:#586e75}.css .hljs-tag,.hljs-addition,.hljs-keyword,.hljs-request,.hljs-status,.hljs-winutils,.method,.nginx .hljs-title{color:#859900}.hljs-command,.hljs-dartdoc,.hljs-hexcolor,.hljs-link_url,.hljs-number,.hljs-phpdoc,.hljs-regexp,.hljs-rules .hljs-value,.hljs-string,.hljs-tag .hljs-value,.tex .hljs-formula{color:#2aa198}.css .hljs-function,.hljs-built_in,.hljs-chunk,.hljs-decorator,.hljs-id,.hljs-identifier,.hljs-localvars,.hljs-title,.hljs-typename,.vhdl .hljs-literal{color:#268bd2}.hljs-attribute,.hljs-class .hljs-title,.hljs-constant,.hljs-link_reference,.hljs-parent,.hljs-type,.hljs-variable,.lisp .hljs-body,.smalltalk .hljs-number{color:#b58900}.css .hljs-pseudo,.diff .hljs-change,.hljs-attr_selector,.hljs-cdata,.hljs-header,.hljs-pragma,.hljs-preprocessor,.hljs-preprocessor .hljs-keyword,.hljs-shebang,.hljs-special,.hljs-subst,.hljs-symbol,.hljs-symbol .hljs-string{color:#cb4b16}.hljs-deletion,.hljs-important{color:#dc322f}.hljs-link_label{color:#6c71c4}.tex .hljs-formula{background:#073642}*,:after,:before{box-sizing:border-box}a{background:0 0;cursor:pointer;color:#35D7BB;text-decoration:none}a:active,a:hover{outline:0}b,strong{font-weight:700}h1{margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}images{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{box-sizing:content-box;height:0}code,pre{font-family:monospace,monospace}html{font-size:.875em;background:#fff;color:#373D49}blockquote p,body,pre{font-size:1rem}body,html{font-family:Georgia,Cambria,serif;height:100%}body{font-weight:400;line-height:2rem}ol,ul{margin-bottom:.83999rem;padding-top:.16001rem}li{-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-left:1rem}li>ol,li>ul{margin-bottom:0}p{text-align:justify;padding-top:.66001rem;-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-top:0}p,pre{margin-bottom:1.33999rem}pre{overflow:auto;padding:.66001rem 9.5px 9.5px;line-height:1.3rem;border-color:#D3DAEA}blockquote{margin:0}blockquote p{margin-bottom:.33999rem;padding:.66001rem 1rem 1rem;border-left:3px solid #A0AABF}td,th{padding:12px}h1,h2,h3,h4,h5,h6{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-style:normal;font-weight:600;margin-top:0}h1{line-height:3rem;font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h2,h3{line-height:3rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}a:focus,a:hover{border-bottom-color:#35D7BB;color:#dff9f4}img{height:auto;max-width:100%}#content{padding:15px;width:800px;margin:0 auto}#content a{color:#A0AABF;text-decoration:underline}
 	</style>
 </head>
 
 <body id="content">
-<h1><a id="How_to_use_Sia_Responsibly_0"></a>How to use Sia Responsibly</h1>
+<h1>DIY Encryption and Redundancy with <code>us</code></h1>
 
 
 
@@ -142,7 +142,7 @@ rem := filesize
     <span class="hljs-keyword">if</span> rem &lt; writeLen {
         writeLen = rem
     }
-    rs.Recover(&amp;buf, shards, rem)
+    rs.Recover(&amp;buf, shards, writeLen)
     rem -= writeLen
 }
 </code></pre>
