@@ -13,7 +13,6 @@
 <p>Recently I published <a href="https://github.com/lukechampine/us"><code>us</code></a>, a low-level interface to Sia. With <code>us</code>, you can interact directly with Sia hosts, allowing you to manage your own file contracts and control exactly what you upload and download. In this post, we’ll demonstrate this by using <code>us</code> to bypass the safety features of <code>siad</code>. Specifically, we’ll upload an unencrypted file to a single host, sacrificing all of the privacy and redundancy advantages of Sia. Of course, in a real app, you should be encrypting your files and uploading them redundantly! This example merely serves as an introduction to the <code>us</code> packages, and shows that <code>us</code> enables you to do things that are not possible with <code>siad</code>.</p>
 <p>The following code snippets use these <code>us</code> packages:</p>
 <pre><code class="language-go"><span class="hljs-keyword">import</span> (
-    <span class="hljs-string">"lukechampine.com/us/hostdb"</span>
     <span class="hljs-string">"lukechampine.com/us/renter"</span>
     <span class="hljs-string">"lukechampine.com/us/renter/proto"</span>
     <span class="hljs-string">"lukechampine.com/us/renter/renterutil"</span>
@@ -59,9 +58,9 @@ f, _ := os.Open(<span class="hljs-string">"myfile.jpg"</span>)
 stat, _ := f.Stat()
 filesize := stat.Size()
 </code></pre>
-<p>To facilitate the upload, we’ll create an <code>Uploader</code> object. For this, we’ll need the host’s current IP, which we can get from <code>siad</code>:</p>
+<p>To facilitate the upload, we’ll create a <code>Session</code> object. For this, we’ll need the host’s current IP, which we can get from <code>siad</code>:</p>
 <pre><code class="language-go">hostIP, _ := siad.ResolveHostKey(hostPubKey)
-uploader, _ := proto.NewUploader(hostIP, contract, currentHeight)
+session, _ := proto.Session(hostIP, contract, currentHeight)
 </code></pre>
 <p>Now we’re ready to start uploading. On each iteration, we read the next sector, upload it, and record the sector’s Merkle root, stopping when we reach the end of the file:</p>
 <pre><code class="language-go"><span class="hljs-keyword">var</span> sector [renterhost.SectorSize]<span class="hljs-typename">byte</span>
@@ -70,31 +69,31 @@ uploader, _ := proto.NewUploader(hostIP, contract, currentHeight)
     <span class="hljs-keyword">if</span> _, err := io.ReadFull(f, sector[:]); err == io.EOF {
         <span class="hljs-keyword">break</span>
     }
-    sectorMerkleRoot, _ := uploader.Upload(&amp;sector)
-    roots = <span class="hljs-built_in">append</span>(roots, sectorMerkleRoot)
+    _ = session.Write([]renterhost.RPCWriteAction{{
+		Type: renterhost.RPCWriteActionAppend,
+		Data: sector[:],
+	}})
+    roots = <span class="hljs-built_in">append</span>(roots, merkle.SectorRoot(&amp;sector))
 }
-uploader.Close()
+session.Close()
 </code></pre>
 <p>We’re done! We’ve uploaded a plaintext file to a single Sia host. Next, we’ll see how to retrieve it.</p>
 <h2><a id="Part_3_Downloading_99"></a>Part 3: Downloading</h2>
-<p>As before, we’ll use the contract and host IP to create an object (this time, a <code>Downloader</code>) that uses the contract revision protocol to facilitate downloads. We’ll also want to create a destination file to hold the downloaded file:</p>
-<pre><code class="language-go">downloader, _ := proto.NewDownloader(hostIP, contract)
+<p>As before, we’ll use the contract and host IP to create a <code>Session</code> that uses the contract revision protocol to facilitate downloads. We’ll also want to create a destination file to hold the downloaded file:</p>
+<pre><code class="language-go">session, _ := proto.NewSession(hostIP, contract, currentHeight)
 dst, _ := os.Create(<span class="hljs-string">"myfile2.jpg"</span>)
 <span class="hljs-keyword">defer</span> dst.Close()
 </code></pre>
-<p>To retrieve the file, we’ll download each sector (storing them in a reusable buffer) and then write the buffer to our output file. To handle padding, we’ll keep track of the “bytes remaining”; when this number is less than a full sector, we’ll know that we should only write the remaining bytes:</p>
-<pre><code class="language-go"><span class="hljs-keyword">var</span> sectorBuf [renterhost.SectorSize]<span class="hljs-typename">byte</span>
-rem := filesize
-<span class="hljs-keyword">for</span> _, sectorMerkleRoot := <span class="hljs-keyword">range</span> roots {
-    _ = downloader.Sector(&amp;sectorBuf, sectorMerkleRoot)
-    writeLen := <span class="hljs-built_in">len</span>(sectorBuf)
-    <span class="hljs-keyword">if</span> rem &lt; writeLen {
-        writeLen = rem
-    }
-    dst.Write(sectorBuf[:rem])
-    rem -= writeLen
+<p>To retrieve the file, we’ll construct a <code>Read</code> request for each sector, writing the responses directly to our output file. To handle padding, we’ll just `Truncate` the file once we've downloaded all of the sectors. (This is a bit wasteful, but we're not aiming for maximum performance here!)</p>
+<pre><code class="language-go"><span class="hljs-keyword">for</span> _, sectorMerkleRoot := <span class="hljs-keyword">range</span> roots {
+    _ = session.Read(dst, []renterhost.RPCReadRequestSection{{
+        MerkleRoot: sectorMerkleRoot,
+        Offset:     <span class="hljs-number">0</span>,
+        Length:     renterhost.SectorSize,
+    }})
 }
-downloader.Close()
+session.Close()
+_ = dst.Truncate(filesize)
 </code></pre>
 <p>And that’s all there is to it!</p>
 <h2><a id="Conclusion_130"></a>Conclusion</h2>

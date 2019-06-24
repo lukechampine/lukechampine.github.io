@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Files as Capabilities in us</title>
+	<style>
+	.hljs,pre{display:block}blockquote p,dfn{font-style:italic}code{background-color:#f2f2f2;border-radius:4px;padding:2px 4px}pre{margin:0 0 10px;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px;-moz-tab-size:4;-o-tab-size:4;tab-size:4}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.hljs{overflow-x:auto;padding:.5em;background:#002b36;color:#839496;-webkit-text-size-adjust:none}.diff .hljs-header,.hljs-comment,.hljs-doctype,.hljs-javadoc,.hljs-pi,.hljs-template_comment,.lisp .hljs-string{color:#586e75}.css .hljs-tag,.hljs-addition,.hljs-keyword,.hljs-request,.hljs-status,.hljs-winutils,.method,.nginx .hljs-title{color:#859900}.hljs-command,.hljs-dartdoc,.hljs-hexcolor,.hljs-link_url,.hljs-number,.hljs-phpdoc,.hljs-regexp,.hljs-rules .hljs-value,.hljs-string,.hljs-tag .hljs-value,.tex .hljs-formula{color:#2aa198}.css .hljs-function,.hljs-built_in,.hljs-chunk,.hljs-decorator,.hljs-id,.hljs-identifier,.hljs-localvars,.hljs-title,.hljs-typename,.vhdl .hljs-literal{color:#268bd2}.hljs-attribute,.hljs-class .hljs-title,.hljs-constant,.hljs-link_reference,.hljs-parent,.hljs-type,.hljs-variable,.lisp .hljs-body,.smalltalk .hljs-number{color:#b58900}.css .hljs-pseudo,.diff .hljs-change,.hljs-attr_selector,.hljs-cdata,.hljs-header,.hljs-pragma,.hljs-preprocessor,.hljs-preprocessor .hljs-keyword,.hljs-shebang,.hljs-special,.hljs-subst,.hljs-symbol,.hljs-symbol .hljs-string{color:#cb4b16}.hljs-deletion,.hljs-important{color:#dc322f}.hljs-link_label{color:#6c71c4}.tex .hljs-formula{background:#073642}*,:after,:before{box-sizing:border-box}a{background:0 0;cursor:pointer;color:#35D7BB;text-decoration:none}a:active,a:hover{outline:0}b,strong{font-weight:700}h1{margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}images{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{box-sizing:content-box;height:0}code,pre{font-family:monospace,monospace}html{font-size:.875em;background:#fff;color:#373D49}blockquote p,body,pre{font-size:1rem}body,html{font-family:Georgia,Cambria,serif;height:100%}body{font-weight:400;line-height:2rem}ol,ul{margin-bottom:.83999rem;padding-top:.16001rem}li{-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-left:1rem}li>ol,li>ul{margin-bottom:0}p{text-align:justify;padding-top:.66001rem;-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-top:0}p,pre{margin-bottom:1.33999rem}pre{overflow:auto;padding:.66001rem 9.5px 9.5px;line-height:1.3rem;border-color:#D3DAEA}blockquote{margin:0}blockquote p{margin-bottom:.33999rem;padding:.66001rem 1rem 1rem;border-left:3px solid #A0AABF}td,th{padding:12px}h1,h2,h3,h4,h5,h6{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-style:normal;font-weight:600;margin-top:0}h1{line-height:3rem;font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h2,h3{line-height:3rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}a:focus,a:hover{border-bottom-color:#35D7BB;color:#dff9f4}img{height:auto;max-width:100%}#content{padding:15px;width:800px;margin:0 auto}#content a{color:#A0AABF;text-decoration:underline}
+	</style>
+</head>
+
+<body id="content">
+
+<h1><a id="Files_as_Capabilities_in_us_0"></a>Files as Capabilities in <code>us</code></h1>
+
+<p><a href="https://lukechampine.com/responsible.html">Previously</a>, we saw how to
+manually add encryption and redundancy to our files. What we didn’t see was
+how to manage the additional metadata required by those features. And there is
+a lot of metadata: we need to know which hosts the file’s shards are stored
+on; which encryption algorithm was used to encrypt the shards; which erasure
+code parameters were used; and so on. If we want to retrieve our file later,
+we need to save all this metadata somewhere. While there are many ways to
+accomplish this, <code>us</code> provides a “blessed” format for doing so, called a
+<em>metafile</em>.</p>
+
+<p>In this post, we’ll examine the structure of a metafile and how it fits into
+the <code>us</code> system. We’ll also take a look at another <code>us</code> format: the format
+that stores your file contracts. Although <code>us</code> provides types and functions for
+working with these formats, this post won’t contain any code examples;
+instead, I’d like to focus on the design decisions. So we’ll wrap up with a
+discussion of why metafiles and contracts in <code>us</code> are fundamentally different
+from their <code>siad</code> counterparts.</p>
+
+<h2><a id="Part_1_Metafiles_21"></a>Part 1: Metafiles</h2>
+
+<p>A metafile consists of an <em>index</em> and a set of <em>shards</em>. The
+metafile format itself is a gzipped tar archive of the index and shards, each
+stored as a separate file. The suggested extension for metafiles is
+<code>.usa</code> – “a” for “archive.”</p>
+
+<p>The index contains what we typically think of as file metadata: the size,
+mode bits, modtime, etc. It also contains Sia-specific information: the
+encryption key, the erasure code parameters, and the public keys of each host
+the file was stored on. The index is encoded as a simple JSON object; you can
+view it directly with <code>tar&nbsp;xzf&nbsp;[metafile]&nbsp;index&nbsp;-O</code>.</p>
+
+<p>The shards collectively describe the actual bytes that comprise the encrypted,
+redundant file. Each shard is associated with a single host. Shards consist of
+a series of binary-encoded “sector slices,” each identifying a sector (by its
+Merkle root) and an offset and length within that sector. For example, a shard
+might refer to the first 512 bytes of sector A, followed by 1024 bytes from
+the middle of sector B; the “logical shard” is then the concatenation of these
+two slices, for a total of 1536 bytes.</p>
+
+<p>To upload a file, we first create the index and initialize a shard file for
+each host. Each time we upload a sector of the file, we’ll append a slice to
+the host’s corresponding shard file. When we’re done, we bundle the index and
+shard files into a <code>.tar.gz</code>. To download, we first need to unzip and un-tar
+that file; then, we use the sector slices in each shard to retrieve the
+(encrypted, redundant) data stored on hosts; then we use the metadata in the
+index to turn that raw data back into our original file.</p>
+
+<p>The metafile format was designed to be easy to grok and easy to work with. It
+uses existing popular formats – tar, gzip, JSON – for everything but the
+shards, which must be binary-encoded for performance reasons. The shards
+themselves are intuitive if you are familiar with erasure-coding; this is why
+the format explicitly makes each shard its own “thing,” rather than having one
+giant binary blob where the boundaries of each shard are determined by fixed
+offsets. (Don’t get me wrong, the latter approach has many advantages – but
+it’s also harder to work with.)</p>
+
+<p>For a more technical description of the metafile format, see <a href="https://github.com/lukechampine/us/blob/master/renter/formats.md">formats.md</a>.</p>
+
+<h2><a id="Part_2_Contracts_62"></a>Part 2: Contracts</h2>
+
+<p>Contract files are much simpler than metafiles. They have two parts. First is
+an immutable <b>header</b>, containing the host’s public key, the contract ID,
+and the secret key that can sign revisions. Following this is the most recent
+<b>revision</b> of the contract, which contains information like the total
+Merkle root of the contract data, how many coins are allocated to the renter and
+host, etc. We overwrite the revision each time we modify the contract.</p>
+
+<p>In principle, a contract could consist of just a header, because the Sia
+protocol allows us to request the most recent revision from the host. We keep a
+local copy of the revision for performance and convenience; it means we don't
+need to perform any network I/O to answer simple questions like "how many coins
+are left in this contract?" But since the revision is non-essential, we can play
+fast and loose with it. If it becomes corrupted or lost, we can always ask the
+host for their copy. Consequently, we don't need to worry about updating the
+revision atomically or calling <code>fsync</code> after each update, which can
+be major performance bottlenecks. The header, on the other hand, is immutable
+and must not be modified. If we accidentally overwrite our secret key, for
+example, we'll never be able to revise the contract again. To avoid this, we
+<code>write</code> the header exactly once, <code>fsync</code> it, and never
+touch it again.</p>
+
+<i>Note: another reason to keep the revision locally is that the host can lie
+about what the most recent revision is. If we catch them doing this, we can
+refuse to ever use them again. The nice thing about this is we can still play
+fast and loose: yes, the host will be able to fool us if our revision is
+corrupted, but they doesn't know if our revision is corrupted or not, so their
+odds of being caught are very high.</i>
+
+<p>Contract files also used to contain the Merkle roots of each sector
+comprising the contract data, but a later upgrade to the Sia protocol made this
+unnecessary. The renter now only needs to store a single Merkle root – one
+covering the entire contract – in order to verify that the host has processed
+its requests correctly. (This root is stored in the revision.)</p>
+
+<p>For a more technical description of the contract file format, see <a href="https://github.com/lukechampine/us/blob/master/renter/formats.md">formats.md</a>.</p>
+
+<h2><a id="Part_3_Capabilities_96"></a>Part 3: Capabilities</h2>
+
+<p>What do contracts and metafiles have in common? The answer lies not so much in
+what they <em>are</em>, but rather what they allow you to <em>do</em>. What contracts and
+metafiles share is that possessing them inherently bestows access rights. If
+you possess a contract file, you can revise that contract; if you possess a
+metafile, you can download that file.</p>
+
+<p>The technical term for this is a <a href="https://en.wikipedia.org/wiki/Capability-based_security">capability</a>. A capability is “a communicable, unforgeable
+token of authority.” Contracts and metafiles contain both a reference to an
+object and a key that permits access to that object – the key is the
+“unforgeable token of authority.” And both files are communicable: if you send
+one to your friend, they gain the exact same access rights.</p>
+
+<p>In <code>siad</code>, the contract and siafile formats contain references and keys, just
+like their <code>us</code> counterparts. But crucially, these files are not
+<em>communicable</em>. If you send a <code>siad</code> contract to a friend, they will not be
+able to load it into their own <code>siad</code>; the system was simply not designed to
+accommodate this sort of operation. Likewise with siafiles, although <code>siad</code>
+plans to support some form of filesharing soon.</p>
+
+<p>By contrast, <code>us</code> encourages treating these files as first-class citizens.
+When you finish uploading a file with <code>user</code>, it doesn’t just print “done”, it
+<em>directly returns a capability</em>, in the form of a metafile. What you do with
+that metafile is up to you; you can stick it in a folder, rename it, delete
+it, compress it, <code>rsync</code> it to a backup server, whatever. The important thing
+is that it’s sitting out in the open for you to manipulate, and you manipulate
+it directly via the filesystem instead of through a custom API.</p>
+
+<p>A great example of this is how <code>user</code> manages “enabled” and “disabled”
+contracts: to enable a contract, just create a symlink to it in the
+appropriate directory. To disable the contract, just delete the symlink. (This
+should sound familiar to anyone who has used nginx.) This sort of
+functionality could have been accomplished with an “enabled” list in a config
+file, or by adding a <code>bool</code> to the contract format, but punting it to the
+filesystem gives us this feature for free, and with semantics the user
+is already familiar with.</p>
+
+<p>Of course, there are downsides to shoving these files in the user’s face.
+Managing contracts is hard work; you need to pick your hosts carefully and make
+sure you renew on time. These tasks are best handled by a sophisticated program,
+not a human. That’s why <code>siad</code> abstracts your contracts into an
+“allowance,” so that you can focus on the high-level goals: how much to spend,
+and over what period. Same with files: by ceding control of your files to
+<code>siad</code>, you allow it to automatically repair them when hosts go
+offline. <code>user</code>, on the other hand, forces you to make all of these
+decisions explicitly, which is both empowering and overwhelming. The good news
+is that you can write your own <code>siad</code>! That is, you can write
+programs in any language that automatically manage your contracts and files. For
+example, you could set up a <code>cron</code> job that automatically renews your
+contracts, or a Python script that regularly scans your hosts and sorts them by
+latency/throughput/price. So in the long term, I don’t expect many people to
+invoke <code>user</code> directly. Instead, they’ll build more sophisticated
+systems on top of <code>user</code> (or <code>us</code>) that are tailored to
+their specific needs.</p>
+
+<h2><a id="Conclusion_153"></a>Conclusion</h2>
+
+<p>We examined some of the design decisions of metafiles and contract files, and
+saw how they operate as capabilities within the <code>us</code> system. We also saw how
+<code>user</code> takes a “Unix philosophy” approach to contract and metafile management
+by encouraging the user to manipulate these files directly.</p>
+
+<p></p>
+</body>
+</html>
